@@ -1,0 +1,20 @@
+name: Fetch Live Scores
+
+on:
+  schedule:
+    # Every 5 minutes during WC 2026 group stage (Jun 11 – Jun 26, UTC)
+    - cron: "*/5 * 11-26 6 *"
+    # Every 5 minutes during WC 2026 knockout stage (Jun 28 – Jul 19, UTC)
+    - cron: "*/5 * 28-30 6 *"
+    - cron: "*/5 * 1-19 7 *"
+  workflow_dispatch:   # allow manual trigger at any time
+
+jobs:
+  fetch-scores:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /fetch-scores on Render
+        run: |
+          curl -s -X POST "${{ secrets.RENDER_API_URL }}/fetch-scores" \
+            -H "x-secret: ${{ secrets.RETRAIN_SECRET }}" \
+            --fail-with-body

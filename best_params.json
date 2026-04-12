@@ -1,0 +1,12 @@
+{
+  "rf_n_estimators": 368,
+  "rf_max_depth": 12,
+  "xgb_n_estimators": 313,
+  "xgb_max_depth": 8,
+  "xgb_learning_rate": 0.059,
+  "xgb_subsample": 0.768,
+  "xgb_colsample_bytree": 0.627,
+  "elo_k": 25.5,
+  "process_noise": 11.6,
+  "measure_noise": 4.6
+}

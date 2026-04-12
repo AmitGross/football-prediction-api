@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.env.local
+
+# Model artifacts — stored in Supabase Storage, not committed
+*.pkl
+*.tmp
+
+# Misc
+.DS_Store

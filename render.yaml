@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: football-prediction-api
+    runtime: python
+    region: oregon
+    plan: starter          # upgrade to standard for more CPU during training
+    buildCommand: pip install -r requirements.txt && python train.py
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_URL
+        sync: false        # set manually in Render dashboard
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: RETRAIN_SECRET
+        sync: false        # shared secret for /retrain and /fetch-scores
+      - key: FOOTBALL_DATA_API_KEY
+        sync: false        # football-data.org API key
+      - key: PYTHON_VERSION
+        value: "3.11"
