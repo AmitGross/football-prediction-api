@@ -189,6 +189,8 @@ async def _predict_all_remaining() -> int:
                 "match_id":             match["id"],
                 "home_team_id":         match["home_team"]["id"],
                 "away_team_id":         match["away_team"]["id"],
+                "home_team_name":       match["home_team"]["name"],
+                "away_team_name":       match["away_team"]["name"],
                 "predicted_home_goals": round(result["lam_A"], 2),
                 "predicted_away_goals": round(result["lam_B"], 2),
                 "predicted_home_score": int(result["goals_A"]),
