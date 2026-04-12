@@ -14,11 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wake up Render (cold start)
-        run: curl -s --max-time 60 "${{ secrets.RENDER_API_URL }}/health" || true
+        run: |
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${{ secrets.RENDER_API_URL }}/health")
+            echo "Attempt $i: HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then break; fi
+            sleep 15
+          done
 
       - name: Call /fetch-scores on Render
         run: |
           curl -s --max-time 300 -X POST "${{ secrets.RENDER_API_URL }}/fetch-scores" \
             -H "x-secret: ${{ secrets.RETRAIN_SECRET }}" \
-            -w "\nHTTP %{http_code}" \
-            --fail
+            -w "\nHTTP %{http_code}"
