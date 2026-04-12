@@ -2,11 +2,11 @@ name: Fetch Live Scores
 
 on:
   schedule:
-    # Every 5 minutes during WC 2026 group stage (Jun 11 – Jun 26, UTC)
-    - cron: "*/5 * 11-26 6 *"
-    # Every 5 minutes during WC 2026 knockout stage (Jun 28 – Jul 19, UTC)
-    - cron: "*/5 * 28-30 6 *"
-    - cron: "*/5 * 1-19 7 *"
+    # Every 10 minutes during WC 2026 group stage (Jun 11 – Jun 26, UTC)
+    - cron: "*/10 * 11-26 6 *"
+    # Every 10 minutes during WC 2026 knockout stage (Jun 28 – Jul 19, UTC)
+    - cron: "*/10 * 28-30 6 *"
+    - cron: "*/10 * 1-19 7 *"
   workflow_dispatch:   # allow manual trigger at any time
 
 jobs:
