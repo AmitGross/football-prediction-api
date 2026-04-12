@@ -178,6 +178,10 @@ async def _predict_all_remaining() -> int:
             round_number=round_number,
         )
 
+        # Map internal outcome label to home/away perspective
+        _outcome_map = {"win": "home_win", "draw": "draw", "loss": "away_win"}
+        outcome_label = _outcome_map.get(result.get("outcome", "draw"), "draw")
+
         # Delete existing prediction for this match then insert fresh
         client.table("ml_predictions").delete().eq("match_id", match["id"]).execute()
         client.table("ml_predictions").insert(
@@ -187,6 +191,9 @@ async def _predict_all_remaining() -> int:
                 "away_team_id":         match["away_team"]["id"],
                 "predicted_home_goals": round(result["lam_A"], 2),
                 "predicted_away_goals": round(result["lam_B"], 2),
+                "predicted_home_score": int(result["goals_A"]),
+                "predicted_away_score": int(result["goals_B"]),
+                "predicted_outcome":    outcome_label,
                 "prob_home_win":        result["prob_home_win"],
                 "prob_draw":            result["prob_draw_raw"],
                 "prob_away_win":        result["prob_away_win"],
