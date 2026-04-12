@@ -13,8 +13,12 @@ jobs:
   fetch-scores:
     runs-on: ubuntu-latest
     steps:
+      - name: Wake up Render (cold start)
+        run: curl -s --max-time 60 "${{ secrets.RENDER_API_URL }}/health" || true
+
       - name: Call /fetch-scores on Render
         run: |
-          curl -s -X POST "${{ secrets.RENDER_API_URL }}/fetch-scores" \
+          curl -s --max-time 300 -X POST "${{ secrets.RENDER_API_URL }}/fetch-scores" \
             -H "x-secret: ${{ secrets.RETRAIN_SECRET }}" \
-            --fail-with-body
+            -w "\nHTTP %{http_code}" \
+            --fail
