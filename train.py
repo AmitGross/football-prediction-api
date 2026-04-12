@@ -88,7 +88,7 @@ def fetch_wc2026_results() -> pd.DataFrame:
     for m in result.data:
         rows.append(
             {
-                "date":    pd.Timestamp(m["starts_at"]).normalize(),
+                "date":    pd.Timestamp(m["starts_at"]).tz_localize(None).normalize(),
                 "team_A":  normalize_team_name(m["home_team"]["name"]),
                 "team_B":  normalize_team_name(m["away_team"]["name"]),
                 "goals_A": int(m["home_score_90"]),

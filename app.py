@@ -164,7 +164,7 @@ async def _predict_all_remaining() -> int:
     for match in scheduled.data:
         team_A = normalize_team_name(match["home_team"]["name"])
         team_B = normalize_team_name(match["away_team"]["name"])
-        match_date = pd.Timestamp(match["starts_at"])
+        match_date = pd.Timestamp(match["starts_at"]).tz_localize(None)
         stage = match.get("stage", "GROUP")
         is_knockout, round_number = _STAGE_FLAGS.get(stage, (0, 1))
 
