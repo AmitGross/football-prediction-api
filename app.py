@@ -178,7 +178,9 @@ async def _predict_all_remaining() -> int:
             round_number=round_number,
         )
 
-        client.table("ml_predictions").upsert(
+        # Delete existing prediction for this match then insert fresh
+        client.table("ml_predictions").delete().eq("match_id", match["id"]).execute()
+        client.table("ml_predictions").insert(
             {
                 "match_id":             match["id"],
                 "home_team_id":         match["home_team"]["id"],
@@ -189,8 +191,7 @@ async def _predict_all_remaining() -> int:
                 "prob_draw":            result["prob_draw_raw"],
                 "prob_away_win":        result["prob_away_win"],
                 "model_version":        MODEL_VERSION,
-            },
-            on_conflict="match_id",
+            }
         ).execute()
         count += 1
 
