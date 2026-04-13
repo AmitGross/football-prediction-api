@@ -193,7 +193,143 @@ Predicted champion: **🏆 France** (beats Mexico 1-1 in the Final, wins on prob
 | SF | France vs Scotland | 3-0 |
 | **Final** | **France vs Mexico** | **1-1 → France** |
 
-### Group stage — predicted winners
+### Group stage — predicted scores
+
+> Predictions from the live model (independent per match, as shown on site). W/D/L = win/draw/loss probability for the home team.
+
+**Group A** — Mexico, South Korea, Czech Republic, South Africa
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Mexico | 3-0 | South Africa | 78% | 18% | 5% |
+| Mexico | 2-1 | South Korea | 49% | 29% | 21% |
+| Czech Republic | 1-1 | South Africa | 45% | 31% | 24% |
+| South Korea | 2-0 | Czech Republic | 59% | 29% | 12% |
+| Czech Republic | 1-1 | Mexico | 27% | 37% | 36% |
+| South Africa | 0-1 | South Korea | 19% | 42% | 39% |
+
+**Group B** — Switzerland, Canada, Bosnia and Herzegovina, Qatar
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Switzerland | 2-0 | Canada | 57% | 31% | 13% |
+| Qatar | 0-1 | Switzerland | 17% | 35% | 48% |
+| Canada | 1-1 | Qatar | 45% | 32% | 23% |
+| Bosnia and Herzegovina | 2-0 | Qatar | 53% | 32% | 15% |
+| Canada | 3-1 | Bosnia and Herzegovina | 68% | 20% | 11% |
+| Switzerland | 3-0 | Bosnia and Herzegovina | 74% | 20% | 6% |
+
+**Group C** — Brazil, **Morocco** ⚡, Haiti, Scotland
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Morocco | 4-0 | Haiti | 86% | 12% | 2% |
+| Scotland | 1-1 | Morocco | 23% | 39% | 37% |
+| Haiti | 0-2 | Scotland | 14% | 33% | 54% |
+| Brazil | 4-0 | Haiti | 86% | 11% | 2% |
+| Scotland | 1-1 | Brazil | 27% | 38% | 35% |
+| Brazil | 1-1 | Morocco | 40% | 32% | 29% |
+
+**Group D** — United States, Turkey, Paraguay, Australia
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| United States | 2-1 | Paraguay | 57% | 29% | 15% |
+| United States | 1-1 | Australia | 40% | 29% | 31% |
+| Australia | 1-1 | Turkey | 41% | 34% | 25% |
+| Turkey | 1-1 | United States | 38% | 37% | 25% |
+| Turkey | 1-0 | Paraguay | 53% | 33% | 14% |
+| Paraguay | 1-0 | Australia | 46% | 36% | 18% |
+
+**Group E** — Germany, Ecuador, Ivory Coast, Curaçao
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Ecuador | 1-1 | Germany | 19% | 37% | 44% |
+| Ivory Coast | 1-1 | Ecuador | 39% | 38% | 22% |
+| Germany | 2-1 | Ivory Coast | 46% | 27% | 27% |
+| Ecuador | 3-0 | Curaçao | 86% | 13% | 2% |
+| Germany | 3-0 | Curaçao | 87% | 12% | 1% |
+| Curaçao | 0-2 | Ivory Coast | 7% | 26% | 67% |
+
+**Group F** — Netherlands, Japan, Sweden, Tunisia
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Netherlands | 1-1 | Japan | 38% | 31% | 31% |
+| Netherlands | 2-0 | Sweden | 74% | 21% | 5% |
+| Tunisia | 1-1 | Japan | 27% | 42% | 31% |
+| Japan | 2-0 | Sweden | 66% | 25% | 9% |
+| Tunisia | 1-1 | Netherlands | 20% | 36% | 44% |
+| Sweden | 1-1 | Tunisia | 30% | 31% | 39% |
+
+**Group G** — Belgium, Egypt, Iran, New Zealand
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Egypt | 1-1 | Iran | 40% | 39% | 21% |
+| Belgium | 2-1 | Egypt | 54% | 27% | 18% |
+| Iran | 3-1 | New Zealand | 71% | 19% | 10% |
+| New Zealand | 1-2 | Belgium | 18% | 29% | 53% |
+| Belgium | 2-1 | Iran | 54% | 29% | 17% |
+| New Zealand | 1-1 | Egypt | 24% | 33% | 43% |
+
+**Group H** — Spain, Uruguay, Cape Verde, Saudi Arabia
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Uruguay | 0-1 | Spain | 18% | 36% | 46% |
+| Cape Verde | 1-0 | Saudi Arabia | 47% | 37% | 16% |
+| Saudi Arabia | 1-1 | Uruguay | 23% | 41% | 35% |
+| Spain | 3-0 | Cape Verde | 80% | 15% | 5% |
+| Spain | 3-0 | Saudi Arabia | 81% | 16% | 3% |
+| Uruguay | 3-0 | Cape Verde | 80% | 15% | 5% |
+
+**Group I** — France, Norway, Senegal, Iraq
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Norway | 1-1 | Senegal | 37% | 35% | 28% |
+| Iraq | 0-2 | Norway | 14% | 31% | 54% |
+| France | 3-0 | Iraq | 73% | 20% | 7% |
+| Norway | 1-1 | France | 25% | 33% | 42% |
+| France | 2-1 | Senegal | 44% | 27% | 29% |
+| Senegal | 2-1 | Iraq | 56% | 29% | 15% |
+
+**Group J** — Argentina, Algeria, Austria, Jordan
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Jordan | 1-1 | Algeria | 23% | 37% | 39% |
+| Jordan | 0-1 | Argentina | 16% | 33% | 51% |
+| Algeria | 1-1 | Austria | 35% | 37% | 28% |
+| Argentina | 3-1 | Algeria | 74% | 18% | 8% |
+| Argentina | 2-0 | Austria | 67% | 23% | 10% |
+| Austria | 2-0 | Jordan | 53% | 32% | 15% |
+
+**Group K** — Portugal, Colombia, DR Congo, Uzbekistan
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Uzbekistan | 1-1 | Colombia | 21% | 36% | 43% |
+| Portugal | 2-0 | DR Congo | 68% | 23% | 10% |
+| Colombia | 2-1 | DR Congo | 59% | 23% | 18% |
+| Portugal | 2-0 | Uzbekistan | 58% | 28% | 14% |
+| DR Congo | 1-1 | Uzbekistan | 49% | 33% | 19% |
+| Colombia | 1-1 | Portugal | 32% | 35% | 34% |
+
+**Group L** — England, Croatia, Ghana, Panama
+
+| Home | Score | Away | W | D | L |
+|------|-------|------|---|---|---|
+| Ghana | 0-1 | Panama | 15% | 40% | 46% |
+| England | 2-1 | Croatia | 47% | 31% | 23% |
+| Croatia | 3-0 | Ghana | 73% | 20% | 8% |
+| Panama | 1-1 | Croatia | 28% | 45% | 27% |
+| England | 3-0 | Ghana | 74% | 19% | 7% |
+| Panama | 0-1 | England | 11% | 33% | 56% |
+
+**Predicted group winners:**
 
 | Group | 1st | 2nd |
 |-------|-----|-----|
@@ -206,7 +342,7 @@ Predicted champion: **🏆 France** (beats Mexico 1-1 in the Final, wins on prob
 | G | Belgium | Egypt |
 | H | Spain | Uruguay |
 | I | France | Norway |
-| J | Argentina | Jordan |
+| J | Argentina | Austria |
 | K | Portugal | Colombia |
 | L | England | Croatia |
 
