@@ -4,7 +4,7 @@ FastAPI service deployed on Render that powers the live ML predictions for [Agai
 
 Automatically retrains after every real match result and writes updated predictions to Supabase, where the Next.js frontend reads them in real time.
 
-**Model v1.6 · 68 features · Best result: 54.7% outcome accuracy (WC 2022 walk-forward) · Predicted WC 2026 champion: France**
+**Model v1.6 · 68 features · Best result: 54.7% outcome accuracy (WC 2022 walk-forward) · Predicted WC 2026 champion: France (beats Mexico in Final)**
 
 ---
 
@@ -182,52 +182,51 @@ Users can opt in to "predict by model" per match. After each game finishes and t
 
 ## WC 2026 pre-tournament predictions (model v1.6, April 2026)
 
-Predicted champion: **🏆 France** (beats Spain 3-1 in the Final)
+Predicted champion: **🏆 France** (beats Mexico 1-1 in the Final, wins on probabilities)
 
 ### France's path
 | Round | Match | Score |
 |-------|-------|-------|
-| R32 | France vs Austria | 3-0 |
-| R16 | France vs Argentina | 3-1 |
-| QF | France vs England | 1-1 (on pens) |
-| SF | France vs Uruguay | 2-1 |
-| **Final** | **France vs Spain** | **3-1** |
+| R32 | France vs Jordan | 3-0 |
+| R16 | France vs Argentina | 1-1 → France |
+| QF | France vs Portugal | 2-1 |
+| SF | France vs Scotland | 3-0 |
+| **Final** | **France vs Mexico** | **1-1 → France** |
 
-### Group stage — predicted scores (key matches)
+### Group stage — predicted winners
 
-| Group | Team A | Score | Team B | P(A win) | P(Draw) | P(B win) |
-|-------|--------|-------|--------|----------|---------|---------|
-| A | Mexico | 3-0 | South Africa | 76.1% | 18.8% | 5.1% |
-| A | South Korea | 2-0 | Czech Republic | 60.9% | 27.9% | 11.2% |
-| B | Canada | 2-1 | Bosnia | 66.2% | 22.2% | 11.7% |
-| B | Qatar | 1-1 | Switzerland | 20.2% | 35.9% | 43.9% |
-| C | Brazil | 1-1 | Morocco | 42.8% | 32.1% | 25.2% |
-| C | Haiti | 0-1 | Scotland | 15.9% | 34.6% | 49.5% |
-| D | United States | 2-1 | Paraguay | 57.3% | 29.0% | 13.7% |
-| E | Germany | 3-0 | Curacao | 84.3% | 14.0% | 1.7% |
-| F | Netherlands | 1-1 | Japan | 39.1% | 32.4% | 28.5% |
-| G | Belgium | 2-1 | Egypt | 52.3% | 27.0% | 20.7% |
-| H | Spain | 3-0 | Cape Verde | 78.0% | 16.4% | 5.6% |
-| I | France | 2-1 | Senegal | 42.0% | 28.8% | 29.2% |
-| J | Argentina | 2-1 | Algeria | 67.0% | 22.3% | 10.7% |
-| K | Portugal | 2-0 | DR Congo | 60.8% | 26.8% | 12.4% |
-| L | England | 2-1 | Croatia | 42.9% | 32.3% | 24.8% |
+| Group | 1st | 2nd |
+|-------|-----|-----|
+| A | Mexico | South Korea |
+| B | Switzerland | Canada |
+| C | **Morocco** ⚡ | Brazil |
+| D | United States | Turkey |
+| E | Germany | Ecuador |
+| F | Netherlands | Japan |
+| G | Belgium | Egypt |
+| H | Spain | Uruguay |
+| I | France | Norway |
+| J | Argentina | Jordan |
+| K | Portugal | Colombia |
+| L | England | Croatia |
 
 ### Full knockout bracket prediction
 
 ```
-R32:   Mexico → Switzerland → Morocco → Brazil → Germany → Netherlands →
-       Iran → Spain → Argentina → France → Portugal → England →
-       Ecuador → Uruguay → Sweden → Egypt
+R32:   Mexico → Switzerland → Morocco → United States → Germany → Netherlands →
+       Belgium → Spain → France → Argentina → Portugal → England →
+       Scotland → Ivory Coast → Senegal → Panama
 
-R16:   Mexico → Brazil → Netherlands → Spain → France → England → Uruguay → Egypt
+R16:   Mexico → Morocco → Germany → Belgium → France → Portugal → Scotland → Senegal
 
-QF:    Brazil → Spain  |  France → Uruguay (on pens)
+QF:    Mexico → Germany  |  France → Scotland
 
-SF:    Spain → France
+SF:    Mexico → France
 
-Final: FRANCE 🏆
+Final: FRANCE 🏆 (vs Mexico, 1-1 on probabilities)
 ```
+
+> Notable divergences from market: Morocco tops Group C over Brazil (77% Polymarket favourite). Spain exits R16 to Belgium. Mexico makes a surprise run to the Final.
 
 ---
 
