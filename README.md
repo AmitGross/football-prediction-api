@@ -75,8 +75,8 @@ Note: Render free tier cold-starts in ~30s. `/retrain` takes ~2–3 min. Use `-T
 
 ## Model
 
-- **Algorithms**: `AveragingEnsemble` (RandomForestRegressor + XGBRegressor) predicting (λ_A, λ_B); XGBClassifier for W/D/L
-- **Probabilities**: Predicted λ → Poisson score grid → P(win)/P(draw)/P(loss), isotonic-calibrated
+- **Algorithms**: `AveragingEnsemble` wrapping two `MultiOutputRegressor` instances (RandomForestRegressor + XGBRegressor), predicting (λ_A, λ_B) — expected goals for each team
+- **Probabilities**: λ_A, λ_B → Poisson score grid → summed into P(win)/P(draw)/P(loss), isotonic-calibrated. No separate classifier — W/D/L probabilities are derived entirely from the regression path.
 - **Training data**: `data/matches.csv` (965 historical matches) + finished WC 2026 results from Supabase
 - **Version**: v1.6 · `random_state=42` · `n_jobs=-1`
 
