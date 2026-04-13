@@ -257,6 +257,28 @@ Computed by averaging RF and XGBoost `feature_importances_` from the production 
 - **Neighbourhood features are highly effective**: 5 of the top 10 features are neighbourhood-based (`wtd_goal_diff_opp_*`, `weighted_opp_elo_*`, `avg_goal_diff_vs_opp_*`). These capture quality-weighted schedule strength and outperform raw Elo and form.
 - **RF vs XGB split**: RF loads heavily on `fifa_rank_diff` (0.38); XGB spreads weight more evenly across neighbourhood, H2H, and form. The ensemble benefits from this complementarity.
 
+---
+
+## Pi-ratings — research note (v1.7 candidate)
+
+From the 2023 Soccer Prediction Challenge paper ([arXiv:2309.14807](https://arxiv.org/abs/2309.14807)):
+
+> **CatBoost + pi-ratings (RPS 0.2085) outperformed a 205-feature engineered set (RPS 0.2416)**. PageRank and Elo-based features were in the candidate pool but did not survive feature selection.
+
+**What pi-ratings are**: A dynamic team strength rating computed via exponential smoothing on the difference between expected and actual goal margin per match. Separate home and away ratings are maintained per team, updated after every game. Unlike vanilla Elo, pi-ratings weight score margin continuously rather than rounding to win/draw/loss.
+
+**Why this is relevant to our model**:
+
+| Aspect | Our model | Pi-ratings |
+|--------|-----------|------------|
+| Primary rating | Elo + FIFA rankings | Pi-ratings (goal-margin exponential smoothing) |
+| Form encoding | Explicit last-5 / last-2 feature windows | Implicit — baked into the rating |
+| Top feature | `fifa_rank_diff` (22% importance) | Pi-rating itself |
+| Benchmarks | RPS 0.2081 (WC 2022 retrain) | RPS 0.2085 (league soccer validation) |
+
+The datasets are different (WC vs 51-league open database), so the comparison is indicative, not direct. That said, our performance is essentially on par with the best published pi-rating results.
+
+**Potential v1.7 experiment**: Add `pi_rating_A` and `pi_rating_B` as supplementary features on top of the existing 68 — not as a replacement for FIFA rankings (which our ablation shows are the dominant signal for international football), but as an additional dynamic strength signal. Expected risk: may be partially redundant with Elo + neighbourhood features already in the model.
 
 ---
 
