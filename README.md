@@ -231,6 +231,47 @@ Final: FRANCE 🏆
 
 ---
 
+## Model vs Market — WC 2026 (April 9, 2026)
+
+Comparison of our v1.6 model predictions against [Polymarket](https://polymarket.com) prediction market odds.
+
+### Tournament winner
+
+| Team | Polymarket | Our model v1.6 |
+|------|-----------|----------------|
+| Spain | 16% 🥇 | Eliminated R16 (by Belgium) |
+| **France** | **14%** | 🏆 **Predicted champion** |
+| England | 11% | Eliminated R16 (by Portugal) |
+| Argentina | 9% | Eliminated R16 (by France) |
+| Brazil | 9% | Eliminated R32 (by United States) |
+| Portugal | 7% | Eliminated QF (by France) |
+| Germany | 5% | Eliminated SF (by Mexico) |
+| Netherlands | 3% | Eliminated R16 (by Germany) |
+
+> Key divergence: France (market #2) is our predicted champion. Spain (market #1) exits R16 to Belgium. Mexico reaches the Final as a surprise run.
+
+### Group stage winners
+
+| Group | Polymarket | Our model v1.6 | Match? |
+|-------|-----------|----------------|--------|
+| A | Mexico (45%) | Mexico | ✅ |
+| B | Switzerland (51%) | Switzerland | ✅ |
+| C | Brazil (77%) | Morocco ⚡ | ❌ |
+| D | TBD playoff* | United States | ❓ |
+| E | Germany (71%) | Germany | ✅ |
+| F | Netherlands (57%) | Netherlands | ✅ |
+| G | Belgium (72%) | Belgium | ✅ |
+| H | Spain (81%) | Spain | ✅ |
+| I | France (69%) | France | ✅ |
+| J | Argentina (77%) | Argentina | ✅ |
+| K | Portugal (64%) | Portugal | ✅ |
+| L | England (72%) | England | ✅ |
+
+> **10/11 group winners match the market.** Only divergence: model predicts Morocco tops Group C over Brazil (77% Polymarket favourite).  
+> *Group D: Polymarket shows a qualification playoff still unresolved at time of snapshot.
+
+---
+
 ## Feature importance analysis (model v1.6)
 
 Computed by averaging RF and XGBoost `feature_importances_` from the production model (trained on 965 matches, April 2026 FIFA rankings).
