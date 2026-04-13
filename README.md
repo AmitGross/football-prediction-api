@@ -256,7 +256,7 @@ Computed by averaging RF and XGBoost `feature_importances_` from the production 
 - **FIFA rankings dominate**: `fifa_rank_diff` alone accounts for 22% of total importance — by far the most predictive single feature.
 - **Neighbourhood features are highly effective**: 5 of the top 10 features are neighbourhood-based (`wtd_goal_diff_opp_*`, `weighted_opp_elo_*`, `avg_goal_diff_vs_opp_*`). These capture quality-weighted schedule strength and outperform raw Elo and form.
 - **RF vs XGB split**: RF loads heavily on `fifa_rank_diff` (0.38); XGB spreads weight more evenly across neighbourhood, H2H, and form. The ensemble benefits from this complementarity.
-- **Stage features (v1.6) learned nothing**: All score 0.000 — training data is ~965 regular matches where these features are always 0. Candidate for removal in v1.7.
+
 
 ---
 
