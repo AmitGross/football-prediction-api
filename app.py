@@ -98,11 +98,34 @@ async def fetch_scores_endpoint(x_secret: str = Header(default="")):
             await _predict_all_remaining()
             retrain_triggered = True
 
+        # Always re-populate knockout bracket (advances winners + fills R32 if group stage done)
+        from populate_knockouts import populate_knockouts
+        ko_result = populate_knockouts()
+
         return {
             "status":            "ok",
             "newly_finished":    newly_finished,
             "retrain_triggered": retrain_triggered,
+            "knockouts":         ko_result,
         }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ── /populate-knockouts ────────────────────────────────────────────────────────
+
+@app.post("/populate-knockouts")
+async def populate_knockouts_endpoint(x_secret: str = Header(default="")):
+    """
+    Reads group stage standings → fills R32 knockout_slots with real team IDs.
+    Also advances winner_team_id through R16, QF, SF, Final, and Bronze slots.
+    Safe to call repeatedly (idempotent).
+    """
+    _require_secret(x_secret)
+    try:
+        from populate_knockouts import populate_knockouts
+        result = populate_knockouts()
+        return result
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
