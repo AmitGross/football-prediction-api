@@ -225,15 +225,17 @@ def _update_knockout_slots(client, tournament_id: str, fd_matches: list[dict], n
 
         update: dict = {}
         if home_score_90 is not None:
-            update["home_score"] = home_score_90
-        if away_score_90 is not None:
-            update["away_score"] = away_score_90
+            # Store the final score: use ET total if available, otherwise 90-min
+            display_home = home_full if home_full is not None else home_score_90
+            display_away = away_full if away_full is not None else away_score_90
+            update["home_score"] = display_home
+            update["away_score"] = display_away
         if winner_id:
             update["winner_team_id"] = winner_id
 
         if update:
             client.table("knockout_slots").update(update).eq("id", slot_a["id"]).execute()
-            print(f"[fetch_scores_ko] {round_key}: {home_name} {home_score_90}-{away_score_90} "
+            print(f"[fetch_scores_ko] {round_key}: {home_name} {display_home}-{display_away} "
                   f"{away_name}{' (winner: ' + (home_name if winner_id == home_id else away_name) + ')' if winner_id else ''}")
 
         if fd_status == "FINISHED" and not prev_winner and winner_id:
