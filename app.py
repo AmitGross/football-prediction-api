@@ -281,7 +281,8 @@ async def _predict_knockout_slots() -> int:
     }
     _outcome_map = {"win": "home_win", "draw": "draw", "loss": "away_win"}
 
-    def _store(anchor_slot, team_a_id, team_a_name, team_b_id, team_b_name, round_name):        team_A = normalize_team_name(team_a_name)
+    def _store(anchor_slot, team_a_id, team_a_name, team_b_id, team_b_name, round_name):
+        team_A = normalize_team_name(team_a_name)
         team_B = normalize_team_name(team_b_name)
         is_knockout, round_number = _ROUND_FLAGS.get(round_name, (1, 2))
         result = predict_match_with_model(
