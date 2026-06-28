@@ -76,6 +76,100 @@ def _parse_label(label: str | None) -> tuple[int, list[str]]:
     return 0, []
 
 
+# ── fd.org name → Supabase name (same mapping as fetch_scores.py) ─────────
+_FDORG_TO_SUPABASE: dict[str, str] = {
+    "Korea Republic":     "South Korea",
+    "Bosnia-Herzegovina": "Bosnia and Herzegovina",
+    "USA":                "United States",
+    "IR Iran":            "Iran",
+    "Côte d'Ivoire":      "Ivory Coast",
+    "Curacao":            "Curaçao",
+    "Cabo Verde":         "Cape Verde",
+}
+
+
+def _populate_r32_from_fd(client, tournament_id: str, slot_index: dict) -> int:
+    """
+    Fetch the actual R32 matchups from football-data.org and use them to
+    set the correct teams in knockout_slots slotBs.
+    Returns the number of slots updated.
+    """
+    import os, requests
+
+    api_key = os.environ.get("FOOTBALL_DATA_API_KEY")
+    if not api_key:
+        print("[populate_knockouts] No FOOTBALL_DATA_API_KEY — skipping fd.org pairing lookup")
+        return 0
+
+    try:
+        resp = requests.get(
+            "https://api.football-data.org/v4/competitions/2000/matches",
+            headers={"X-Auth-Token": api_key},
+            timeout=15,
+        )
+        resp.raise_for_status()
+    except Exception as e:
+        print(f"[populate_knockouts] fd.org fetch failed: {e} — skipping")
+        return 0
+
+    r32_matches = [m for m in resp.json().get("matches", []) if m.get("stage") == "ROUND_OF_32"]
+    if not r32_matches:
+        print("[populate_knockouts] fd.org has no R32 matches yet")
+        return 0
+
+    # Re-fetch current slot state from DB (may have just been updated in step 4)
+    slots_fresh = (
+        client.table("knockout_slots")
+        .select("id, round, side, position, home_team_id")
+        .eq("tournament_id", tournament_id)
+        .eq("round", "r32")
+        .execute()
+        .data or []
+    )
+    # team_id → slotA (even positions only)
+    team_to_slotA = {
+        s["home_team_id"]: s
+        for s in slots_fresh
+        if s["position"] % 2 == 0 and s.get("home_team_id")
+    }
+    fresh_index = {(s["side"], s["position"]): s for s in slots_fresh}
+
+    # Team name → UUID
+    teams_raw = client.table("teams").select("id, name").execute()
+    name_to_id = {r["name"]: r["id"] for r in teams_raw.data}
+
+    updated = 0
+    for m in r32_matches:
+        home_name = _FDORG_TO_SUPABASE.get(m["homeTeam"]["name"], m["homeTeam"]["name"])
+        away_name = _FDORG_TO_SUPABASE.get(m["awayTeam"]["name"], m["awayTeam"]["name"])
+        home_id = name_to_id.get(home_name)
+        away_id = name_to_id.get(away_name)
+        if not home_id or not away_id:
+            print(f"[populate_knockouts] fd.org: unknown team '{home_name}' or '{away_name}'")
+            continue
+
+        # Determine which team is in slotA
+        slot_a = team_to_slotA.get(home_id) or team_to_slotA.get(away_id)
+        if not slot_a:
+            print(f"[populate_knockouts] fd.org: no slotA for {home_name} vs {away_name} yet")
+            continue
+
+        opponent_id = away_id if team_to_slotA.get(home_id) else home_id
+        opponent_name = away_name if team_to_slotA.get(home_id) else home_name
+
+        slot_b = fresh_index.get((slot_a["side"], slot_a["position"] + 1))
+        if not slot_b:
+            continue
+
+        if slot_b.get("home_team_id") != opponent_id:
+            client.table("knockout_slots").update({"home_team_id": opponent_id}).eq("id", slot_b["id"]).execute()
+            updated += 1
+            print(f"[populate_knockouts] fd.org R32: {home_name if team_to_slotA.get(home_id) else away_name} "
+                  f"vs {opponent_name} (corrected)")
+
+    return updated
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def populate_knockouts() -> dict:
@@ -170,48 +264,12 @@ def populate_knockouts() -> dict:
             r32_updated += 1
             print(f"[populate_knockouts] R32 {s['side']} pos {s['position']} "
                   f"({s['slot_label']}) → {team_id}")
-    # ── 4b. Bipartite matching for "3 XXXXX" slots ───────────────────────────
-    # Each "3 XXXXX" slot must receive exactly one qualifying 3rd-place team whose
-    # group appears in the label. Use augmenting-path matching to avoid duplicates.
-    third_slots = [
-        s for s in all_slots
-        if s["round"] == "r32" and (s.get("slot_label") or "").strip().startswith("3 ")
-    ]
-    # Build candidate map: slot_id → set of team_ids that could fill it
-    slot_candidates: dict[str, list[str]] = {}
-    for s in third_slots:
-        _, groups = _parse_label(s.get("slot_label"))
-        candidates = [thirds_by_group[g] for g in groups if g in thirds_by_group]
-        slot_candidates[s["id"]] = candidates
-
-    # Augmenting-path bipartite matching
-    # match_slot[slot_id] = team_id currently assigned
-    # match_team[team_id] = slot_id currently assigned
-    match_slot: dict[str, str] = {}
-    match_team: dict[str, str] = {}
-
-    def _try_augment(slot_id: str, visited: set) -> bool:
-        for team_id in slot_candidates.get(slot_id, []):
-            if team_id in visited:
-                continue
-            visited.add(team_id)
-            prev_slot = match_team.get(team_id)
-            if prev_slot is None or _try_augment(prev_slot, visited):
-                match_slot[slot_id] = team_id
-                match_team[team_id] = slot_id
-                return True
-        return False
-
-    for s in third_slots:
-        _try_augment(s["id"], set())
-
-    for s in third_slots:
-        team_id = match_slot.get(s["id"])
-        if team_id and team_id != s.get("home_team_id"):
-            client.table("knockout_slots").update({"home_team_id": team_id}).eq("id", s["id"]).execute()
-            r32_updated += 1
-            print(f"[populate_knockouts] R32 {s['side']} pos {s['position']} "
-                  f"({s['slot_label']}) → {team_id}")
+    # ── 4b. Fetch actual R32 pairings from football-data.org ─────────────────
+    # fd.org publishes the exact scheduled matchups (incl. correct 3rd-place
+    # assignments per the FIFA combination table). We use these as source of
+    # truth instead of bipartite matching, which can produce valid-but-wrong
+    # pairings for 3rd-place slots.
+    r32_updated += _populate_r32_from_fd(client, tournament_id, all_slots, slot_index)
     # ── 5. Advance winners through bracket ───────────────────────────────────
     # Refresh slots after R32 update so winner_team_id info is current
     slots_raw2 = (
