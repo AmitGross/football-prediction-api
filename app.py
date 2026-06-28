@@ -258,13 +258,15 @@ async def _predict_knockout_slots() -> int:
     t = client.table("tournaments").select("id").eq("year", 2026).single().execute()
     tournament_id = t.data["id"]
 
-    # Fetch all knockout slots with their home team info
+    # Fetch slots and teams separately (avoids FK join syntax issues in supabase-py)
     slots_result = client.table("knockout_slots").select(
-        "id, round, side, position, home_team_id, winner_team_id, "
-        "home_team:teams!knockout_slots_home_team_id_fkey(id, name)"
+        "id, round, side, position, home_team_id, winner_team_id"
     ).eq("tournament_id", tournament_id).execute()
-
     slots = slots_result.data
+
+    teams_result = client.table("teams").select("id, name").execute()
+    id_to_name = {t["id"]: t["name"] for t in teams_result.data}
+
     by_pos = {(s["round"], s["side"], s["position"]): s for s in slots}
 
     history = build_training_data()
@@ -279,8 +281,7 @@ async def _predict_knockout_slots() -> int:
     }
     _outcome_map = {"win": "home_win", "draw": "draw", "loss": "away_win"}
 
-    def _store(anchor_slot, team_a_id, team_a_name, team_b_id, team_b_name, round_name):
-        team_A = normalize_team_name(team_a_name)
+    def _store(anchor_slot, team_a_id, team_a_name, team_b_id, team_b_name, round_name):        team_A = normalize_team_name(team_a_name)
         team_B = normalize_team_name(team_b_name)
         is_knockout, round_number = _ROUND_FLAGS.get(round_name, (1, 2))
         result = predict_match_with_model(
@@ -320,47 +321,54 @@ async def _predict_knockout_slots() -> int:
             for i in range(0, len(round_slots) - 1, 2):
                 slot_a = round_slots[i]
                 slot_b = round_slots[i + 1]
-                if not slot_a.get("home_team") or not slot_b.get("home_team"):
+                team_a_id = slot_a.get("home_team_id")
+                team_b_id = slot_b.get("home_team_id")
+                if not team_a_id or not team_b_id:
                     continue  # teams not known yet
                 if slot_a.get("winner_team_id"):
                     continue  # already decided — no prediction needed
-                _store(
-                    slot_a,
-                    slot_a["home_team"]["id"], slot_a["home_team"]["name"],
-                    slot_b["home_team"]["id"], slot_b["home_team"]["name"],
-                    round_name,
-                )
+                team_a_name = id_to_name.get(team_a_id)
+                team_b_name = id_to_name.get(team_b_id)
+                if not team_a_name or not team_b_name:
+                    continue
+                _store(slot_a, team_a_id, team_a_name, team_b_id, team_b_name, round_name)
                 count += 1
 
     # Final — left side pos 0 vs right side pos 0
     left_final  = by_pos.get(("final", "left",  0))
     right_final = by_pos.get(("final", "right", 0))
-    if (left_final and right_final
-            and left_final.get("home_team") and right_final.get("home_team")
-            and not left_final.get("winner_team_id")):
-        _store(
-            left_final,
-            left_final["home_team"]["id"],  left_final["home_team"]["name"],
-            right_final["home_team"]["id"], right_final["home_team"]["name"],
-            "final",
-        )
-        count += 1
+    if left_final and right_final:
+        lf_a_id = left_final.get("home_team_id")
+        lf_b_id = right_final.get("home_team_id")
+        if (lf_a_id and lf_b_id
+                and not left_final.get("winner_team_id")
+                and id_to_name.get(lf_a_id) and id_to_name.get(lf_b_id)):
+            _store(
+                left_final,
+                lf_a_id, id_to_name[lf_a_id],
+                lf_b_id, id_to_name[lf_b_id],
+                "final",
+            )
+            count += 1
 
     # Bronze — position 0 vs position 1 (side may vary)
     bronze_slots = sorted(
         [s for s in slots if s["round"] == "bronze"],
         key=lambda s: s["position"],
     )
-    if (len(bronze_slots) >= 2
-            and bronze_slots[0].get("home_team") and bronze_slots[1].get("home_team")
-            and not bronze_slots[0].get("winner_team_id")):
-        _store(
-            bronze_slots[0],
-            bronze_slots[0]["home_team"]["id"], bronze_slots[0]["home_team"]["name"],
-            bronze_slots[1]["home_team"]["id"], bronze_slots[1]["home_team"]["name"],
-            "bronze",
-        )
-        count += 1
+    if len(bronze_slots) >= 2:
+        br_a_id = bronze_slots[0].get("home_team_id")
+        br_b_id = bronze_slots[1].get("home_team_id")
+        if (br_a_id and br_b_id
+                and not bronze_slots[0].get("winner_team_id")
+                and id_to_name.get(br_a_id) and id_to_name.get(br_b_id)):
+            _store(
+                bronze_slots[0],
+                br_a_id, id_to_name[br_a_id],
+                br_b_id, id_to_name[br_b_id],
+                "bronze",
+            )
+            count += 1
 
     print(f"[predict_knockout_slots] Wrote {count} knockout slot predictions")
     return count
