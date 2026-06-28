@@ -230,5 +230,137 @@ async def _predict_all_remaining() -> int:
         ).execute()
         count += 1
 
-    print(f"[predict_all] Wrote {count} predictions to Supabase ml_predictions")
+    print(f"[predict_all] Wrote {count} group-stage predictions to Supabase ml_predictions")
+
+    # Also predict knockout slot matchups (teams in slots, not in matches table)
+    ko_count = await _predict_knockout_slots()
+    return count + ko_count
+
+
+# ── Internal: predict all undecided knockout slot matchups ─────────────────────
+
+async def _predict_knockout_slots() -> int:
+    """
+    Generates ML predictions for knockout slot pairs where both teams are known
+    but the match hasn't been decided yet. Stores rows with slot_id (not match_id)
+    so the frontend can find them by home_team_id + away_team_id.
+    Mirrors the pairing logic in the Next.js knockouts page.
+    """
+    if _model is None or _feature_cols is None:
+        raise RuntimeError("Model not loaded — cannot predict.")
+
+    from supabase_client import get_client, normalize_team_name
+    from train import build_training_data
+    from predict import predict_match_with_model
+
+    client = get_client()
+
+    t = client.table("tournaments").select("id").eq("year", 2026).single().execute()
+    tournament_id = t.data["id"]
+
+    # Fetch all knockout slots with their home team info
+    slots_result = client.table("knockout_slots").select(
+        "id, round, side, position, home_team_id, winner_team_id, "
+        "home_team:teams!knockout_slots_home_team_id_fkey(id, name)"
+    ).eq("tournament_id", tournament_id).execute()
+
+    slots = slots_result.data
+    by_pos = {(s["round"], s["side"], s["position"]): s for s in slots}
+
+    history = build_training_data()
+
+    _ROUND_FLAGS = {
+        "r32":    (1, 2),
+        "r16":    (1, 2),
+        "qf":     (1, 3),
+        "sf":     (1, 4),
+        "final":  (1, 5),
+        "bronze": (1, 5),
+    }
+    _outcome_map = {"win": "home_win", "draw": "draw", "loss": "away_win"}
+
+    def _store(anchor_slot, team_a_id, team_a_name, team_b_id, team_b_name, round_name):
+        team_A = normalize_team_name(team_a_name)
+        team_B = normalize_team_name(team_b_name)
+        is_knockout, round_number = _ROUND_FLAGS.get(round_name, (1, 2))
+        result = predict_match_with_model(
+            _model, _feature_cols,
+            team_A, team_B, history,
+            is_knockout=is_knockout,
+            round_number=round_number,
+        )
+        outcome_label = _outcome_map.get(result.get("outcome", "draw"), "draw")
+        client.table("ml_predictions").delete().eq("slot_id", anchor_slot["id"]).execute()
+        client.table("ml_predictions").insert({
+            "slot_id":              anchor_slot["id"],
+            "home_team_id":         team_a_id,
+            "away_team_id":         team_b_id,
+            "home_team_name":       team_a_name,
+            "away_team_name":       team_b_name,
+            "predicted_home_goals": round(result["lam_A"], 2),
+            "predicted_away_goals": round(result["lam_B"], 2),
+            "predicted_home_score": int(result["goals_A"]),
+            "predicted_away_score": int(result["goals_B"]),
+            "predicted_outcome":    outcome_label,
+            "prob_home_win":        result["prob_home_win"],
+            "prob_draw":            result["prob_draw_raw"],
+            "prob_away_win":        result["prob_away_win"],
+            "model_version":        MODEL_VERSION,
+        }).execute()
+
+    count = 0
+
+    # R32 / R16 / QF / SF — pairs within the same (round, side)
+    for round_name in ["r32", "r16", "qf", "sf"]:
+        for side in ["left", "right"]:
+            round_slots = sorted(
+                [s for s in slots if s["round"] == round_name and s["side"] == side],
+                key=lambda s: s["position"],
+            )
+            for i in range(0, len(round_slots) - 1, 2):
+                slot_a = round_slots[i]
+                slot_b = round_slots[i + 1]
+                if not slot_a.get("home_team") or not slot_b.get("home_team"):
+                    continue  # teams not known yet
+                if slot_a.get("winner_team_id"):
+                    continue  # already decided — no prediction needed
+                _store(
+                    slot_a,
+                    slot_a["home_team"]["id"], slot_a["home_team"]["name"],
+                    slot_b["home_team"]["id"], slot_b["home_team"]["name"],
+                    round_name,
+                )
+                count += 1
+
+    # Final — left side pos 0 vs right side pos 0
+    left_final  = by_pos.get(("final", "left",  0))
+    right_final = by_pos.get(("final", "right", 0))
+    if (left_final and right_final
+            and left_final.get("home_team") and right_final.get("home_team")
+            and not left_final.get("winner_team_id")):
+        _store(
+            left_final,
+            left_final["home_team"]["id"],  left_final["home_team"]["name"],
+            right_final["home_team"]["id"], right_final["home_team"]["name"],
+            "final",
+        )
+        count += 1
+
+    # Bronze — position 0 vs position 1 (side may vary)
+    bronze_slots = sorted(
+        [s for s in slots if s["round"] == "bronze"],
+        key=lambda s: s["position"],
+    )
+    if (len(bronze_slots) >= 2
+            and bronze_slots[0].get("home_team") and bronze_slots[1].get("home_team")
+            and not bronze_slots[0].get("winner_team_id")):
+        _store(
+            bronze_slots[0],
+            bronze_slots[0]["home_team"]["id"], bronze_slots[0]["home_team"]["name"],
+            bronze_slots[1]["home_team"]["id"], bronze_slots[1]["home_team"]["name"],
+            "bronze",
+        )
+        count += 1
+
+    print(f"[predict_knockout_slots] Wrote {count} knockout slot predictions")
     return count
