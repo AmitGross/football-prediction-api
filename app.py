@@ -101,6 +101,9 @@ async def fetch_scores_endpoint(x_secret: str = Header(default="")):
         # Always re-populate knockout bracket (advances winners + fills R32 if group stage done)
         from populate_knockouts import populate_knockouts
         ko_result = populate_knockouts()
+        # If new knockout matches were created, run predictions for them
+        if ko_result.get("matches_upserted", 0) > 0:
+            await _predict_all_remaining()
 
         return {
             "status":            "ok",

@@ -161,11 +161,12 @@ def _populate_r32_from_fd(client, tournament_id: str, slot_index: dict) -> int:
         if not slot_b:
             continue
 
-        if slot_b.get("home_team_id") != opponent_id:
+        # Only set if slotB is currently empty — never overwrite manual corrections
+        if slot_b.get("home_team_id") is None:
             client.table("knockout_slots").update({"home_team_id": opponent_id}).eq("id", slot_b["id"]).execute()
             updated += 1
             print(f"[populate_knockouts] fd.org R32: {home_name if team_to_slotA.get(home_id) else away_name} "
-                  f"vs {opponent_name} (corrected)")
+                  f"vs {opponent_name}")
 
     return updated
 
